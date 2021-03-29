@@ -82,7 +82,6 @@ class StateSpec extends AnyFlatSpec with should.Matchers {
             .flatMap(State.update)
             .flatMap(State.update)
             .flatMap(State.update)
-            .flatMap(State.update)
             .provide(env)
         } 
 
@@ -108,7 +107,6 @@ class StateSpec extends AnyFlatSpec with should.Matchers {
       
         val state = runtime.unsafeRun {
             ZIO.succeed(Disconnected())
-            .flatMap(State.update)
             .flatMap(State.update)
             .flatMap(State.update)
             .flatMap(State.update)
@@ -165,11 +163,6 @@ class StateSpec extends AnyFlatSpec with should.Matchers {
 
     it should "poll records from the selected partitions only." in {
         val ui = UITest()
-        ui.bootstrapAddress = "abcd"
-        ui.askConnect = true
-        ui.selectedTopic = Some("topic1")
-        ui.isConsuming = true
-        ui.selectedPartitions = Vector(1)
 
         val ka = KafkaTest()
 
@@ -177,16 +170,37 @@ class StateSpec extends AnyFlatSpec with should.Matchers {
       
         val state = runtime.unsafeRun {
             ZIO.succeed(Disconnected())
+            .flatMap(s => ZIO.effect {
+                ui.bootstrapAddress = "abcd"
+                ui.askConnect = true
+                s
+            })
+            .flatMap(State.update)
+            // InitiatingConnection
+            .flatMap(State.update)
+            // Connecting
+            .flatMap(State.update)
+            // Connected, NoTopic
+            .flatMap(s => ZIO.effect {
+                ui.selectedTopic = Some("topic1")
+                ui.isConsuming = true
+                s
+            })
+            .flatMap(State.update)
+            // Connected, InitiatingOpeningTopic
+            .flatMap(State.update)
+            // Connected, OpeningTopic
+            .flatMap(State.update)
+            // Connected, OpenedTopic
+            .flatMap(s => ZIO.effect {
+                ui.selectedPartitions = Vector(1)
+                s
+            })
+            .flatMap(State.update)
+            // Connected, OpenedTopic
             .flatMap(State.update)
             .flatMap(State.update)
-            .flatMap(State.update)
-            .flatMap(State.update)
-            .flatMap(State.update)
-            .flatMap(State.update)
-            .flatMap(State.update)
-            .flatMap(State.update)
-            .flatMap(State.update)
-             .provide(env)
+            .provide(env)
         } 
 
         withClue("State: " ++ state.toString() ++ "\n") {
@@ -211,7 +225,6 @@ class StateSpec extends AnyFlatSpec with should.Matchers {
       
         val state = runtime.unsafeRun {
             ZIO.succeed(Disconnected())
-            .flatMap(State.update)
             .flatMap(State.update)
             .flatMap(State.update)
             .flatMap(State.update)

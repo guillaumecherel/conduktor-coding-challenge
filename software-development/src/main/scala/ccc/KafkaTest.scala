@@ -25,7 +25,6 @@ case class KafkaTest() extends KafkaInterface {
     def disconnect(): ZIO[Env, Throwable, Unit] =
         ZIO.effect {
             this.bootstrapAddress = None
-            this.topicList = Vector.empty
             this.selectedTopic = None
             this.selectedPartitions = Vector.empty
         }

@@ -11,6 +11,7 @@ trait UIInterface {
     def getIsConsuming(): ZIO[Env, Throwable, Boolean]
     def setRecords(records: Vector[String]): ZIO[Env, Throwable, Unit]
     def appendRecords(records: Vector[String]): ZIO[Env, Throwable, Unit]
+    def setAlert(msg: String): ZIO[Env, Throwable, Unit]
     def setTopics(topics: Vector[String]): ZIO[Env, Throwable, Unit]
     def setIsConnected(bool: Boolean):  ZIO[Env, Throwable, Unit]
     def setIsConsuming(bool: Boolean):  ZIO[Env, Throwable, Unit]

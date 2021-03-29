@@ -5,12 +5,13 @@ import scalafx.animation.AnimationTimer
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.beans.property._
 import scalafx.collections.ObservableBuffer
+import scalafx.geometry._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
-import scalafx.scene.Scene
 import scalafx.scene.control._
 import scalafx.scene.control.cell._
-import scalafx.geometry._
+import scalafx.scene.paint.Color
+import scalafx.scene.Scene
 import scalafx.scene.layout._
 import scalafx.scene.text.Text
 import scalafx.util._
@@ -36,7 +37,7 @@ case class UI(
 
     @Override
     def getSelectedTopic(): ZIO[Env, Throwable, Option[String]] =
-        ZIO.succeed( selectedTopic().nonEmpty match {
+        ZIO.succeed( selectedTopic() != null && selectedTopic().nonEmpty match {
             case false => None
             case true => Some(selectedTopic())
         }) 
@@ -54,6 +55,12 @@ case class UI(
     @Override
     def getIsConnected(bool: Boolean): ZIO[Env, Throwable, Boolean] =
         ZIO.succeed(isConnected())
+
+    @Override
+    def setAlert(msg: String): ZIO[Env, Throwable, Unit] = 
+        ZIO.effect {
+            this.alert() = msg
+        }
 
     @Override
     def setAskConnect(bool: Boolean): ZIO[Env, Throwable, Unit] = 
@@ -116,7 +123,7 @@ case class UI(
             root = new BorderPane {
                 padding = Insets(25)
 
-                top = addressBar
+                top = topPanel
 
                 center <== when(selectedTopic =!= "")
                     .choose(recordsView) 
@@ -133,13 +140,14 @@ case class UI(
         }
     }
 
-    val bootstrapAddress = new StringProperty("")
+    val alert = StringProperty("")
 
-    val selectedTopic = new StringProperty("")
+    val bootstrapAddress = StringProperty("")
+
+    val selectedTopic = StringProperty("")
 
     val kafkaProperties = Vector.tabulate(100) { (i: Int) =>
-        (new StringProperty(this, "propertyName" ++ i.toString(), ""), 
-            new StringProperty(this, "propertyValue" ++ i.toString(), ""))
+        (StringProperty(""), StringProperty(""))
     }
 
     val topics = ObservableBuffer[String]()
@@ -148,9 +156,9 @@ case class UI(
 
     val partitions = ObservableBuffer[(Int, BooleanProperty)]()
 
-    val isConnected = new BooleanProperty(this, "isConnected", false)
+    val isConnected = BooleanProperty(false)
 
-    val isConsuming = new BooleanProperty(this, "isConsuming", true)
+    val isConsuming = BooleanProperty(true)
 
     val askConnect = BooleanProperty(false)
 
@@ -218,7 +226,7 @@ case class UI(
         val vbox = this
 
         val headerText = new Text {
-            text <== new StringProperty(this, "recordsViewHeaderText", "Records for topic: ").concat(selectedTopic).concat(" (most recent first)")
+            text <== new StringProperty("Records for topic: ").concat(selectedTopic).concat(" (most recent first)")
         }
 
         val consumingButton = new Button() {
@@ -315,6 +323,19 @@ case class UI(
          }
 
         children = Seq(header, list)
+    }
+
+    val topPanel = new VBox {
+        padding = Insets(15)
+        spacing = 10
+        alignment = Pos.Center
+
+        val alertMsg = new Text {
+            text <== alert
+            fill = Color.Red
+        }
+
+        children = Seq( alertMsg, addressBar )
     }
 
     val rightPanel = new VBox {
