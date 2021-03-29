@@ -1,2 +1,5 @@
-software-development/target
 software-development/.bloop
+software-development/.envrc
+software-development/.metals
+software-development/project
+software-development/target
