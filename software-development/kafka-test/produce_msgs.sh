@@ -12,24 +12,31 @@ BROKER=broker:29092
 NETWORK=`realpath $0 | xargs dirname | xargs basename`_default
 
 function kafkacat { 
-  docker run --interactive \
-    --network $NETWORK \
-    confluentinc/cp-kafkacat:6.1.0 \
-    kafkacat -b $BROKER "$@"
+    docker run --interactive \
+        --network $NETWORK \
+        confluentinc/cp-kafkacat:6.1.0 \
+        kafkacat -b $BROKER "$@"
 }
 
 ANIMALS="1:Turtle
 2:Elephant
 3:Moon fish"
 
-function seconds {
-  while true
-  do
-    date
-    sleep 1
-  done
+docker run --network $NETWORK confluentinc/cp-kafka:6.1.0 kafka-topics \
+    --bootstrap-server $BROKER --create --topic animals --partitions 1
+    
+docker run --network $NETWORK confluentinc/cp-kafka:6.1.0 kafka-topics \
+    --bootstrap-server $BROKER --create --topic seconds --partitions 2
+    
 
-}
-
+echo "Sending records…"
 echo -e "$ANIMALS" | kafkacat -t animals -K: -P
-seconds | kafkacat -t seconds -P
+
+i=0
+while true
+do
+    i=$((i + 1))
+    partition=$((i % 2))
+    echo $i | kafkacat -t seconds -p $partition -P 
+    sleep 1
+done
