@@ -164,9 +164,9 @@ case class UI(
         }
     }
 
-    val alert = StringProperty("")
+    val alert = StringProperty("Please enter a bootstrap address and port like localhost:9092")
 
-    val alertColor = ObjectProperty(Color.Red)
+    val alertColor = ObjectProperty(Color.Black)
 
     val bootstrapAddress = StringProperty("")
 
