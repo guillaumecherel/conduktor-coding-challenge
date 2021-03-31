@@ -12,6 +12,7 @@ trait UIInterface {
     def setRecords(records: Vector[String]): ZIO[Env, TransitionFailure, Unit]
     def appendRecords(records: Vector[String]): ZIO[Env, TransitionFailure, Unit]
     def setAlert(msg: String): ZIO[Env, TransitionFailure, Unit]
+    def setInfo(msg: String): ZIO[Env, TransitionFailure, Unit]
     def setTopics(topics: Vector[String]): ZIO[Env, TransitionFailure, Unit]
     def setIsConnected(bool: Boolean):  ZIO[Env, TransitionFailure, Unit]
     def setIsConsuming(bool: Boolean):  ZIO[Env, TransitionFailure, Unit]

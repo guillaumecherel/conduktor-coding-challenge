@@ -60,6 +60,14 @@ case class UI(
     def setAlert(msg: String): ZIO[Env, TransitionFailure, Unit] = 
         ZIO.effectTotal {
             this.alert() = msg
+            this.alertColor() = Color.Red
+        }
+
+    @Override
+    def setInfo(msg: String): ZIO[Env, TransitionFailure, Unit] = 
+        ZIO.effectTotal {
+            this.alert() = msg
+            this.alertColor() = Color.Black
         }
 
     @Override
@@ -142,6 +150,8 @@ case class UI(
 
     val alert = StringProperty("")
 
+    val alertColor = ObjectProperty(Color.Red)
+
     val bootstrapAddress = StringProperty("")
 
     val selectedTopic = StringProperty("")
@@ -165,7 +175,7 @@ case class UI(
     val bootstrapAddressTextField = new TextField {
         focusTraversable = false
         prefColumnCount = 80
-        promptText = "Enter a bootstrap address"
+        promptText = "Enter a bootstrap address and port (ex. localhost:9092)"
         text <==> bootstrapAddress
         onAction = { _ => 
             askConnect() = true
@@ -329,9 +339,13 @@ case class UI(
         spacing = 10
         alignment = Pos.Center
 
+        val vbox = this
+
         val alertMsg = new Text {
+            alignment = Pos.Center
             text <== alert
-            fill = Color.Red
+            fill <== alertColor
+            wrappingWidth <== vbox.width - 100
         }
 
         children = Seq( alertMsg, addressBar )

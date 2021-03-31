@@ -9,6 +9,7 @@ import org.apache.kafka.common.KafkaFuture
 import org.apache.kafka.common.TopicPartition 
 import org.apache.kafka.common.errors._
 
+import org.apache.kafka.common.KafkaException
 
 import org.apache.kafka.clients.admin.Admin
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -45,8 +46,6 @@ object KafkaService extends KafkaInterface {
         kafkaProperties: Vector[(String, String)]): Properties = {
 
         val defaultProps: Map[String, String] = Map(
-            ("group.id" -> "test"),
-            ("enable.auto.commit" -> "false"),
             ("key.deserializer" -> "org.apache.kafka.common.serialization.StringDeserializer"),
             ("value.deserializer" -> "org.apache.kafka.common.serialization.StringDeserializer")
         )
@@ -75,16 +74,24 @@ object KafkaService extends KafkaInterface {
         bootstrapAddress: String,
         kafkaProperties: Vector[(String, String)]): ZIO[Any, TransitionFailure, Unit] =
         state match {
-            case Disconnected() => ZIO.effect {
-                val props = makeProperties(bootstrapAddress, 
-                    kafkaProperties)
+            case Disconnected() => 
+                ZIO.effect {
+                    val props = makeProperties(bootstrapAddress, 
+                        kafkaProperties)
 
-                val admin = Admin.create(props) 
+                    val admin = Admin.create(props) 
 
-                val topics = admin.listTopics().names().thenApply(toScalaVector)
+                    val topics = admin.listTopics().names().thenApply(toScalaVector)
 
-                state = Connected(admin, props, topics)
-            }.mapError { e => OtherError(e) }
+                    state = Connected(admin, props, topics)
+                }.mapError { _ match {
+                    case e: KafkaException => ConnectionFailed("Could not " ++
+                        s"connect to $bootstrapAddress. There might be an " ++
+                        "error in the bootstrap address or the properties. " ++
+                        "Please enter a bootstrap address in the form " ++ 
+                        "ADDRESS:PORT.", e)
+                    case e => OtherError(e) 
+                }}
             case other => 
                 disconnect() *> 
                 connect(bootstrapAddress, kafkaProperties)
@@ -182,12 +189,12 @@ object KafkaService extends KafkaInterface {
                         .toVector
                 }.mapError {
                     case e: AuthenticationException => 
-                        ConnectionFailed("Authentication failed, check " ++
-                            " credentials. " ++ e.getMessage())
+                        ConnectionFailed("Authentication failed, please " ++
+                            "check credentials. ", e)
                     case e: AuthorizationException =>
                         ConnectionFailed("You are not authorized " ++
                             "to access the list of partitions for the topic " ++ 
-                            curTopic)
+                            curTopic, e)
                     case other => OtherError(other)
                 }
         }
@@ -223,11 +230,11 @@ object KafkaService extends KafkaInterface {
                     case e: IllegalStateException => TransitionNotTriggered()
                     case e: AuthenticationException => 
                         ConnectionFailed("Authentication failed, check " ++
-                            " credentials. " ++ e.getMessage())
+                            " credentials.", e)
                     case e: AuthorizationException =>
                         ConnectionFailed("You are not authorized " ++
                             "to access the list of partitions for the topic " ++ 
-                            curTopic)
+                            curTopic, e)
                     case other => OtherError(other)
                 }
         }
