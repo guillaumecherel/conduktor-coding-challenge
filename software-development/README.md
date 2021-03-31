@@ -1,9 +1,15 @@
 # Usage
 
-Launch the application with
+Launch the application:
 
 ```
 sbt run
+```
+
+Run the tests:
+
+```
+sbt test
 ```
 
 # Test with a local kafka service
