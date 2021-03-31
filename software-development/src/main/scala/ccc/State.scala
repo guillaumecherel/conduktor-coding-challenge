@@ -49,6 +49,8 @@ object State {
                 .catchSome { 
                     case ConnectionFailed(msg) => connectionFailed(c, msg) 
                     case TransitionNotTriggered() => nothing(c)
+                    case ResponseNotReady() => nothing(c) 
+                    case ResponseLost(msg) => connectionFailed(c, msg) 
                 }
             case c : Connected =>
                 userAsksConnect(c)
@@ -66,10 +68,10 @@ object State {
     def userAsksConnect(connection: Disconnected): 
     ZIO[Env, TransitionFailure, State] =
         for {
-            curAskConnect <- Env.ui(_.getAskConnect()).orDie
+            curAskConnect <- Env.ui(_.getAskConnect())
             _ <- ZIO.unless(curAskConnect)(ZIO.fail(TransitionNotTriggered()))
-            _ <- Env.ui(_.setAskConnect(false)).orDie
-            _ <- Env.ui(_.setAlert("")).orDie
+            _ <- Env.ui(_.setAskConnect(false))
+            _ <- Env.ui(_.setAlert(""))
         } yield {
             println("Initiating Connection")
             InitiatingConnection()
@@ -78,9 +80,9 @@ object State {
     def userAsksConnect(connection: Connected): 
     ZIO[Env, TransitionFailure, State] =
         for {
-            curAskConnect <- Env.ui(_.getAskConnect()).orDie
+            curAskConnect <- Env.ui(_.getAskConnect())
             _ <- ZIO.when(!curAskConnect)(ZIO.fail(TransitionNotTriggered()))
-            _ <- Env.ui(_.setAskConnect(false)).orDie
+            _ <- Env.ui(_.setAskConnect(false))
         } yield {
             println("Changing bootstrap.")
             ChangingBootstrap()
@@ -89,9 +91,9 @@ object State {
     def userAsksConnect(connection: Connecting): 
     ZIO[Env, TransitionFailure, State] =
         for {
-            curAskConnect <- Env.ui(_.getAskConnect()).orDie
+            curAskConnect <- Env.ui(_.getAskConnect())
             _ <- ZIO.when(!curAskConnect)(ZIO.fail(TransitionNotTriggered()))
-            _ <- Env.ui(_.setAskConnect(false)).orDie
+            _ <- Env.ui(_.setAskConnect(false))
         } yield {
             println("Changing bootstrap while connecting.")
             ChangingBootstrap()
@@ -100,11 +102,11 @@ object State {
     def disconnecting(connection: Connected):
     ZIO[Env, TransitionFailure, State] =
         for {
-            _ <- Env.kafka(_.disconnect()).orDie
-            _ <- Env.ui(_.setRecords(Vector.empty)).orDie
-            _ <- Env.ui(_.setTopics(Vector.empty)).orDie
-            _ <- Env.ui(_.setIsConnected(false)).orDie
-            _ <- Env.ui(_.setPartitions(Vector.empty, Vector.empty)).orDie
+            _ <- Env.kafka(_.disconnect())
+            _ <- Env.ui(_.setRecords(Vector.empty))
+            _ <- Env.ui(_.setTopics(Vector.empty))
+            _ <- Env.ui(_.setIsConnected(false))
+            _ <- Env.ui(_.setPartitions(Vector.empty, Vector.empty))
         } yield {
             println("Disconnecting.")
             InitiatingConnection()
@@ -113,11 +115,11 @@ object State {
     def disconnecting(connection: ChangingBootstrap):
     ZIO[Env, TransitionFailure, State] =
         for {
-            _ <- Env.kafka(_.disconnect()).orDie
-            _ <- Env.ui(_.setRecords(Vector.empty)).orDie
-            _ <- Env.ui(_.setTopics(Vector.empty)).orDie
-            _ <- Env.ui(_.setIsConnected(false)).orDie
-            _ <- Env.ui(_.setPartitions(Vector.empty, Vector.empty)).orDie
+            _ <- Env.kafka(_.disconnect())
+            _ <- Env.ui(_.setRecords(Vector.empty))
+            _ <- Env.ui(_.setTopics(Vector.empty))
+            _ <- Env.ui(_.setIsConnected(false))
+            _ <- Env.ui(_.setPartitions(Vector.empty, Vector.empty))
         } yield {
             println("Disconnecting.")
             InitiatingConnection()
@@ -126,14 +128,14 @@ object State {
     def connecting(connection: InitiatingConnection): 
     ZIO[Env, TransitionFailure, State] =
         for {
-            bootstrapAddress <- Env.ui(_.getBootstrapAddress()).orDie
+            bootstrapAddress <- Env.ui(_.getBootstrapAddress())
             _ <- ZIO.unless(bootstrapAddress != null && 
                 bootstrapAddress.nonEmpty)(ZIO.fail(ConnectionFailed("Please enter a bootstrap address.")))
-            kafkaProperties <- Env.ui(_.getKafkaProperties()).orDie
-            _ <- Env.kafka(_.connect(bootstrapAddress, kafkaProperties)).orDie
-            _ <- Env.ui(_.setRecords(Vector.empty)).orDie
-            _ <- Env.ui(_.setTopics(Vector.empty)).orDie
-            _ <- Env.ui(_.setIsConnected(false)).orDie
+            kafkaProperties <- Env.ui(_.getKafkaProperties())
+            _ <- Env.kafka(_.connect(bootstrapAddress, kafkaProperties))
+            _ <- Env.ui(_.setRecords(Vector.empty))
+            _ <- Env.ui(_.setTopics(Vector.empty))
+            _ <- Env.ui(_.setIsConnected(false))
         } yield {
             println("Connecting to " ++ bootstrapAddress.toString())
             Connecting(bootstrapAddress, kafkaProperties)
@@ -142,11 +144,11 @@ object State {
     def connectionActualized(connection: Connecting): 
     ZIO[Env, TransitionFailure, State] =
         for {
-            isConnected <- Env.kafka(_.isConnected()).orDie
+            isConnected <- Env.kafka(_.isConnected())
             _ <- ZIO.unless(isConnected)(ZIO.fail(TransitionNotTriggered()))
-            topicNames <- Env.kafka(_.listTopics()).orDie
-            _ <- Env.ui(_.setIsConnected(isConnected)).orDie
-            _ <- Env.ui(_.setTopics(topicNames)).orDie
+            topicNames <- Env.kafka(_.listTopics())
+            _ <- Env.ui(_.setIsConnected(isConnected))
+            _ <- Env.ui(_.setTopics(topicNames))
         } yield {
             println("Is Connected, topics:" ++ topicNames.toString())
             Connected(connection.bootstrapAddress, 
@@ -163,7 +165,7 @@ object State {
     def connectionFailed(connection: State, msg: String): 
     ZIO[Env, TransitionFailure, State] =
         for {
-            _ <- Env.ui(_.setAlert(s"Connection failed. $msg")).orDie
+            _ <- Env.ui(_.setAlert(s"Connection failed. $msg"))
         } yield {
             println("Connection failed.")
             Disconnected()

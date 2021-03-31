@@ -2,6 +2,8 @@ name := "conductor-coding-challenge"
 version := "1.0"
 scalaVersion := "2.13.5"
 
+// libraryDependencies += "org.apache.kafka" %% "kafka" % "2.7.0"
+libraryDependencies += "org.apache.kafka" % "kafka-clients" % "2.7.0"
 libraryDependencies += "dev.zio" %% "zio" % "1.0.5"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.5"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.5" % "test"

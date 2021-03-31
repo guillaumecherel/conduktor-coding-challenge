@@ -20,7 +20,7 @@ import scalafx.geometry.Pos
 
 object App extends JFXApp {
 
-    val kafkaInterface = KafkaTest()
+    val kafkaInterface = KafkaService
     val ui = UI(Disconnected(), kafkaInterface, State.step)
 
     stage = ui.stage

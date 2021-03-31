@@ -7,31 +7,29 @@ case class KafkaTest() extends KafkaInterface {
 
     @Override
     def connect(bootstrapAddress: String,
-        adminProperties: Vector[(String, String)]): ZIO[Env, Throwable, Unit] =
-        ZIO.effect {
+        kafkaProperties: Vector[(String, String)]): ZIO[Any, TransitionFailure, Unit] =
+        ZIO.effectTotal {
             this.bootstrapAddress = bootstrapAddress.nonEmpty match {
                 case false => None
                 case true => Some(bootstrapAddress)
             } 
-
-            ()
         }
 
     @Override
-    def isConnected(): ZIO[Env, Throwable, Boolean] =
+    def isConnected(): ZIO[Any, TransitionFailure, Boolean] =
         ZIO.succeed(bootstrapAddress.nonEmpty)
 
     @Override
-    def disconnect(): ZIO[Env, Throwable, Unit] =
-        ZIO.effect {
+    def disconnect(): ZIO[Any, TransitionFailure, Unit] =
+        ZIO.effectTotal {
             this.bootstrapAddress = None
             this.selectedTopic = None
             this.selectedPartitions = Vector.empty
         }
 
     @Override
-    def openTopic(topicName: String): ZIO[Env, Throwable, Unit] =
-        ZIO.effect {
+    def openTopic(topicName: String): ZIO[Any, TransitionFailure, Unit] =
+        ZIO.effectTotal {
             this.selectedTopic = topicName.nonEmpty match {
                 case false => None
                 case true => Option(topicName) 
@@ -39,23 +37,26 @@ case class KafkaTest() extends KafkaInterface {
         }
 
     @Override
-    def hasTopicOpened(): ZIO[Env, Throwable, Boolean] = 
+    def hasTopicOpened(): ZIO[Any, TransitionFailure, Boolean] = 
         ZIO.succeed(selectedTopic.nonEmpty)
 
     @Override
-    def closeTopic(): ZIO[Env, Throwable, Unit] =
+    def closeTopic(): ZIO[Any, TransitionFailure, Unit] =
         ZIO.succeed(())
 
     @Override
-    def listPartitions(): ZIO[Env, Throwable, Vector[Int]] =
+    def listPartitions(): ZIO[Any, TransitionFailure, Vector[Int]] =
         ZIO.succeed(this.partitions)
 
     @Override
-    def listTopics(): ZIO[Env, Throwable, Vector[String]] =
+    def listTopics(): ZIO[Any, TransitionFailure, Vector[String]] =
         ZIO.succeed(this.topicList)
 
+    def seekToBeginning(selectedPartitions: Vector[Int]): ZIO[Any, TransitionFailure, Unit] = 
+        ZIO.succeed(())
+
     @Override
-    def poll(): ZIO[Env, Throwable, Vector[String]] =
+    def poll(): ZIO[Any, TransitionFailure, Vector[String]] =
         ZIO.succeed {
             this.selectedTopic match {
                 case None => throw new RuntimeException("No topic selected")
@@ -70,8 +71,8 @@ case class KafkaTest() extends KafkaInterface {
         }
 
     @Override
-    def assignPartitions(partition: Vector[Int]): ZIO[Env, Throwable, Unit] =
-        ZIO.effect {
+    def assignPartitions(partition: Vector[Int]): ZIO[Any, TransitionFailure, Unit] =
+        ZIO.effectTotal {
             this.selectedPartitions = partition
         }
 

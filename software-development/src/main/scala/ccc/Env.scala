@@ -8,10 +8,10 @@ final case class Env(
 
 object Env {
 
-    def ui[A](f: UIInterface => ZIO[Env, Throwable, A]): ZIO[Env, Throwable, A] =
+    def ui[A](f: UIInterface => ZIO[Env, TransitionFailure, A]): ZIO[Env, TransitionFailure, A] =
         ZIO.accessM((env:Env) => f(env.ui))
 
-    def kafka[A](f: KafkaInterface => ZIO[Env, Throwable, A]): ZIO[Env, Throwable, A] =
+    def kafka[A](f: KafkaInterface => ZIO[Env, TransitionFailure, A]): ZIO[Env, TransitionFailure, A] =
         ZIO.accessM((env:Env) => f(env.kafkaInterface))
 }
  
