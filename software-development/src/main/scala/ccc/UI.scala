@@ -17,6 +17,17 @@ import scalafx.scene.text.Text
 import scalafx.util._
 import zio._
 
+/**
+  * The scalafx user interface. Since Scalafx controls the main loop, we pass
+  * it the step function which is responsible for updating the main application
+  * state. It also takes care of creating the application environment Env
+  * consisting of the given KafkaInterface and this UI itself. The overriden
+  * effectful method mutate the UI state.
+  *
+  * @param initialState
+  * @param kafkaInterface
+  * @param step
+  */
 case class UI(
     initialState: State,
     kafkaInterface: KafkaInterface, 
@@ -109,16 +120,20 @@ case class UI(
         }
 
     @Override
-    def setPartitions(partitions: Vector[Int], selectedPartitions: Vector[Int]): ZIO[Env, TransitionFailure, Unit] =
+    def setPartitions(partitions: Vector[Int], selectedPartitions: Vector[Int]): 
+        ZIO[Env, TransitionFailure, Unit] =
         ZIO.effectTotal {
             this.partitions.clear()
             this.partitions.addAll( 
-                partitions.sorted.map { i => (i, BooleanProperty(selectedPartitions.contains(i))) }
+                partitions.sorted.map { i => 
+                    (i, BooleanProperty(selectedPartitions.contains(i))) 
+                }
             )
         }
 
     @Override
-    def setSelectedPartitions(selectedPartitions: Vector[Int]): ZIO[Env, TransitionFailure, Unit] =
+    def setSelectedPartitions(selectedPartitions: Vector[Int]): 
+        ZIO[Env, TransitionFailure, Unit] =
         ZIO.effectTotal {
             this.partitions.foreach { case (partition, checked) => 
                 checked() = selectedPartitions.contains(partition)
@@ -143,6 +158,7 @@ case class UI(
 
                 right = rightPanel
 
+                // Start the main application state update loop.
                 stepper.start()
             }
         }
@@ -174,7 +190,7 @@ case class UI(
 
     val bootstrapAddressTextField = new TextField {
         focusTraversable = false
-        prefColumnCount = 80
+        prefColumnCount = 60
         promptText = "Enter a bootstrap address and port (ex. localhost:9092)"
         text <==> bootstrapAddress
         onAction = { _ => 
@@ -192,6 +208,8 @@ case class UI(
     val env = Env(this, kafkaInterface)
     var state = initialState
 
+    // This AnimationTimer is responsible for continuously updating the 
+    // application main state.
     val stepper = AnimationTimer { (now: Long) => 
         state = Runtime.default.unsafeRun(step(state).provide(env))
     }
@@ -273,14 +291,12 @@ case class UI(
         case ((name, value), i) => {
             val nameTextField = new TextField {
                 focusTraversable = false
-                prefColumnCount = 20
                 promptText = "property.name." ++ i.toString()
                 text <==> name
             }
 
             val valueTextField = new TextField {
                 focusTraversable = false
-                prefColumnCount = 20
                 promptText = "value"
                 text <==> value
             }
@@ -323,7 +339,6 @@ case class UI(
             prefHeight = 500
             cellFactory = CheckBoxListCell.forListView[(Int, BooleanProperty)]( 
                 selectedProperty = { 
-                    //TODO l'appariement bidirectionnel ne fonctionne pas
                     (pair: (Int, BooleanProperty)) => pair._2
                 },
                 converter = StringConverter.toStringConverter { 
@@ -342,10 +357,8 @@ case class UI(
         val vbox = this
 
         val alertMsg = new Text {
-            alignment = Pos.Center
             text <== alert
             fill <== alertColor
-            wrappingWidth <== vbox.width - 100
         }
 
         children = Seq( alertMsg, addressBar )

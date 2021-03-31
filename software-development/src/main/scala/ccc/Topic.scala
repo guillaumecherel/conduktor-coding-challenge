@@ -25,6 +25,7 @@ final case class ChangingTopic() extends Topic
 object Topic {
 
     def update(topic: Topic): ZIO[Env, TransitionFailure, Topic] = 
+        // See explanation in function State.update
         topic match {
             case t : NoTopic =>
                 userSelectingTopic(t)
@@ -61,35 +62,39 @@ object Topic {
     def userSelectingTopic(topic: NoTopic): ZIO[Env, TransitionFailure, Topic] =
         for {
             selectedTopic <- Env.ui(_.getSelectedTopic())
-            _ <- ZIO.unless(selectedTopic.nonEmpty)(ZIO.fail(TransitionNotTriggered()))
+            _ <- ZIO.unless(selectedTopic.nonEmpty) {
+                    ZIO.fail(TransitionNotTriggered())
+                }
             _ <- ZIO.effectTotal {
-                println("Selecting new topic.")
-            }
+                    println("Selecting new topic.")
+                }
         } yield InitiatingOpeningTopic()
 
     def userSelectingTopic(topic: OpenedTopic): ZIO[Env, TransitionFailure, Topic] =
         for {
             selectedTopic <- Env.ui(_.getSelectedTopic())
             _ <- selectedTopic match {
-                case None => ZIO.fail(TransitionNotTriggered())
-                case Some(selectedTopicName) =>
-                    ZIO.unless(selectedTopicName != topic.topicName)(
-                    ZIO.fail(TransitionNotTriggered()))
-            }
+                    case None => ZIO.fail(TransitionNotTriggered())
+                    case Some(selectedTopicName) =>
+                        ZIO.unless(selectedTopicName != topic.topicName)(
+                            ZIO.fail(TransitionNotTriggered())
+                        )
+                }
             _ <- ZIO.effectTotal {
-                println("Changing topic.")
-            }
+                    println("Changing topic.")
+                }
         } yield ChangingTopic()
 
     def userSelectingTopic(topic: OpeningTopic): ZIO[Env, TransitionFailure, Topic] =
         for {
             selectedTopic <- Env.ui(_.getSelectedTopic())
             _ <- selectedTopic match {
-                case None => ZIO.fail(TransitionNotTriggered())
-                case Some(selectedTopicName) =>
-                    ZIO.unless(selectedTopicName != topic.topicName)(
-                    ZIO.fail(TransitionNotTriggered()))
-            }
+                    case None => ZIO.fail(TransitionNotTriggered())
+                    case Some(selectedTopicName) =>
+                        ZIO.unless(selectedTopicName != topic.topicName)(
+                            ZIO.fail(TransitionNotTriggered())
+                        )
+                }
             _ <- ZIO.effectTotal {
                 println("Changing topic while opening one.")
             }
@@ -142,10 +147,11 @@ object Topic {
         for {
             isConsuming <- Env.ui(_.getIsConsuming())
             _ <- ZIO.unless(isConsuming != topic.isConsuming)(
-                ZIO.fail(TransitionNotTriggered()))
+                    ZIO.fail(TransitionNotTriggered())
+                )
             _ <- ZIO.effectTotal {
-                println(s"Updating setting isConsuming $isConsuming")
-            }
+                    println(s"Updating setting isConsuming $isConsuming")
+                }
         } yield topic.copy(isConsuming = isConsuming)
 
     def updatingPartitions(topic: OpenedTopic):
@@ -154,11 +160,12 @@ object Topic {
             partitions <- Env.kafka(_.listPartitions())
             selectedPartitions <- Env.ui(_.getSelectedPartitions())
             _ <- ZIO.unless(partitions != topic.partitions)(
-                ZIO.fail(TransitionNotTriggered()))
+                    ZIO.fail(TransitionNotTriggered())
+                )
             _ <- Env.ui(_.setPartitions(partitions, selectedPartitions))
             _ <- ZIO.effectTotal {
-                println(s"Updating partitions: partitions $partitions")
-            }
+                    println(s"Updating partitions: partitions $partitions")
+                }
         } yield topic.copy(partitions = partitions)
 
     def updatingSelectedPartitions(topic: OpenedTopic):
@@ -171,13 +178,15 @@ object Topic {
             _ <- Env.kafka(_.assignPartitions(selectedPartitions))
             _ <- Env.kafka(_.seekToBeginning(selectedPartitions))
             _ <- ZIO.effectTotal {
-                println(s"Updating selected partitions: selectedPartitions $selectedPartitions")
-            }
+                    println(s"Updating selected partitions: selectedPartitions $selectedPartitions")
+                }
         } yield topic.copy(selectedPartitions = selectedPartitions)
 
     def polling(topic: OpenedTopic): ZIO[Env, TransitionFailure, Topic] =
         for {
-            _ <- ZIO.unless(topic.isConsuming)(ZIO.fail(TransitionNotTriggered()))
+            _ <- ZIO.unless(topic.isConsuming)(
+                    ZIO.fail(TransitionNotTriggered())
+                )
             newRecords <- Env.kafka(_.poll())
             _ <- Env.ui(_.appendRecords(newRecords))
         } yield topic.copy(buffer = topic.buffer.concat(newRecords))

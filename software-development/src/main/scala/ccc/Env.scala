@@ -2,6 +2,12 @@ package ccc
 
 import zio._
 
+/**
+  * The application environment.
+  *
+  * @param ui Interface to the user interface 
+  * @param kafkaInterface Interface to the kafka service
+  */
 final case class Env(
     ui: UIInterface, 
     kafkaInterface: KafkaInterface)

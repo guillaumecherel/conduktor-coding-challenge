@@ -2,6 +2,9 @@ package ccc
 
 import zio._
 
+/**
+  * An abstract interface to the user interface.
+  */
 trait UIInterface {
     def getBootstrapAddress(): ZIO[Env, TransitionFailure, String]
     def getSelectedPartitions(): ZIO[Env, TransitionFailure, Vector[Int]]

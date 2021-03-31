@@ -20,6 +20,10 @@ import java.time.Duration
 
 import java.util.{Set => JavaSet}
 
+/**
+  * The actual interface to kafka used in the application. This object's 
+  * effectful methods (ZIO[Any, _, _]) mutate the internal variable state.
+  */
 object KafkaService extends KafkaInterface {
 
     trait KafkaState 
@@ -66,7 +70,8 @@ object KafkaService extends KafkaInterface {
     }
 
     val toScalaVector = new KafkaFuture.BaseFunction[JavaSet[String], Vector[String]]() {
-        def apply(a: JavaSet[String]): Vector[String] = JavaConverters.asScala(a).toVector
+        def apply(a: JavaSet[String]): Vector[String] = 
+            JavaConverters.asScala(a).toVector
     }
 
     @Override
@@ -81,7 +86,8 @@ object KafkaService extends KafkaInterface {
 
                     val admin = Admin.create(props) 
 
-                    val topics = admin.listTopics().names().thenApply(toScalaVector)
+                    val topics = admin.listTopics().names()
+                        .thenApply(toScalaVector)
 
                     state = Connected(admin, props, topics)
                 }.mapError { _ match {

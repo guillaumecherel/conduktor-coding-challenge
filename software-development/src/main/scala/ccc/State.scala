@@ -4,6 +4,9 @@ import zio._
 
 import java.util.Calendar
 
+/**
+ * The application main state.
+ */
 sealed trait State
 
 final case class Disconnected() extends State
@@ -30,10 +33,20 @@ object State {
     def step (connection: State): ZIO[Env, Throwable, State] = 
         update(connection).mapError {
             case OtherError(cause) => cause
-            case other => new RuntimeException("Unhandled exception: " ++ other.toString())
         }
 
     def update(connection: State): ZIO[Env, TransitionFailure, State] = 
+        // The application is modelled as a finite state machine where 
+        // the states are the possible values of type State and the 
+        // transition are functions with return type 
+        // ZIO[Env, TransitionFailure, State]. A transition is triggered
+        // (succeeds) or not (fails) depending on some conditions. A failure
+        // with the error TransitionNotTriggered tells that the conditions
+        // weren't met (for example, the "userAsksConnect" transition is 
+        // triggered only when the user asks for connection by clicking 
+        // the "connect" button). Some transitions are triggered by previous
+        // transition failures in a catchSome clause (such as the transition 
+        // "connectionFailed").
         connection match {
             case c : Disconnected =>
                 userAsksConnect(c)
@@ -134,34 +147,43 @@ object State {
     ZIO[Env, TransitionFailure, State] =
         for {
             bootstrapAddress <- Env.ui(_.getBootstrapAddress())
-            _ <- ZIO.unless(bootstrapAddress != null && 
-                bootstrapAddress.nonEmpty)(
-                ZIO.fail(ConnectionFailed("Please enter a bootstrap address.", new Throwable())))
+            _ <- ZIO.unless(
+                    bootstrapAddress != null && bootstrapAddress.nonEmpty
+                )(
+                    ZIO.fail(ConnectionFailed(
+                        "Please enter a bootstrap address.", 
+                        new Throwable()
+                    ))
+                )
             kafkaProperties <- Env.ui(_.getKafkaProperties())
             _ <- Env.kafka(_.connect(bootstrapAddress, kafkaProperties))
             _ <- Env.ui(_.setRecords(Vector.empty))
             _ <- Env.ui(_.setTopics(Vector.empty))
             _ <- Env.ui(_.setIsConnected(false))
-            now <- ZIO.effectTotal(
-                (Calendar.getInstance.getTimeInMillis / 1000).toLong)
+            now <- ZIO.effectTotal {
+                    (Calendar.getInstance.getTimeInMillis / 1000).toLong
+                }
             _ <- ZIO.effectTotal {
-                println("Connecting to " ++ bootstrapAddress.toString())
-            }
+                    println("Connecting to " ++ bootstrapAddress.toString())
+                }
         } yield Connecting(bootstrapAddress, kafkaProperties, now)
 
     def connectionActualized(connection: Connecting): 
     ZIO[Env, TransitionFailure, State] =
         for {
-            now <- ZIO.effectTotal(
-                (Calendar.getInstance.getTimeInMillis / 1000).toLong)
+            now <- ZIO.effectTotal {
+                    (Calendar.getInstance.getTimeInMillis / 1000).toLong
+                }
             elapsedSeconds <- ZIO.succeed(now - connection.timestamp)
-            _ <- Env.ui(_.setInfo("Connecting to " ++ 
-                connection.bootstrapAddress.toString() ++
-                (if (elapsedSeconds < 5) { 
-                    s" ($elapsedSeconds s)"
-                } else {
-                    s" ($elapsedSeconds s… is the server up?)"
-                })))
+            _ <- Env.ui { _.setInfo(
+                    "Connecting to " ++ 
+                    connection.bootstrapAddress.toString() ++
+                    (if (elapsedSeconds < 5) { 
+                        s" ($elapsedSeconds s)"
+                    } else {
+                        s" ($elapsedSeconds s… is the server up?)"
+                    })
+                )}
             isConnected <- Env.kafka(_.isConnected())
             _ <- ZIO.unless(isConnected)(ZIO.fail(TransitionNotTriggered()))
             topicNames <- Env.kafka(_.listTopics())

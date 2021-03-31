@@ -2,6 +2,10 @@ package ccc
 
 import zio._
 
+/**
+  * A fake user interface interface for testing purpose.
+  *
+  */
 case class UITest() extends UIInterface {
 
     @Override
@@ -27,6 +31,12 @@ case class UITest() extends UIInterface {
     @Override
     def getSelectedPartitions(): ZIO[Env, TransitionFailure, Vector[Int]] =
         ZIO.succeed(this.selectedPartitions)
+
+    @Override
+    def setInfo(msg: String): ZIO[Env, TransitionFailure, Unit] = 
+        ZIO.effectTotal {
+            println("Info: " ++ msg)
+        }
 
     @Override
     def setAlert(msg: String): ZIO[Env, TransitionFailure, Unit] = 

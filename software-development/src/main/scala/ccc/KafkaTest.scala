@@ -3,6 +3,10 @@ package ccc
 import zio._
 import zio.console._
 
+/**
+  * An interface to a fake kafka service for testing purpose.
+  *
+  */
 case class KafkaTest() extends KafkaInterface {
 
     @Override
