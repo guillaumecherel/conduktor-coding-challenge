@@ -20,12 +20,15 @@ records to them:
 ```
 kafka-test/produce_msgs.sh
 ```
+ 
+Wait for the topics to be created on the service. Once the kafka service has
+started and topics were created, connect to the test kafka broker by entering
+`localhost:9092` in the application bootstrap address field. Optionally, enter
+additionnal properties to send to the KafkaAdmin and KafkaConsumer in the
+right-hand panel. Select one of the topics that appear to see the records and
+the partitions to consume from.
 
-In the application user interface started with `sbt run`, connect to the test
-kafka broker at the address `localhost` and port `9092`, select one of the
-topics that appear to see the records.
-
-Stop the kafka service
+When finished, stop the kafka service with:
 
 ```
 docker-compose -f kafka-test/docker-compose.yml down
