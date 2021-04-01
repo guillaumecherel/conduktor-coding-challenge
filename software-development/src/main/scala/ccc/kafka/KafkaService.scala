@@ -1,4 +1,4 @@
-package ccc
+package ccc.kafka
 
 import zio._
 
@@ -20,6 +20,8 @@ import java.time.Duration
 
 import java.util.{Set => JavaSet}
 
+import ccc.errors._
+ 
 /**
   * The actual interface to kafka used in the application. This object's 
   * effectful methods (ZIO[Any, _, _]) mutate the internal variable state.

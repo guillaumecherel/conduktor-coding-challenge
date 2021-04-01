@@ -1,6 +1,9 @@
-package ccc
+package ccc.ui
 
 import zio._
+
+import ccc.Env
+import ccc.errors._
 
 /**
   * An abstract interface to the user interface.

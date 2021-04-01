@@ -1,4 +1,4 @@
-package ccc
+package ccc.errors
 
 import zio._
 

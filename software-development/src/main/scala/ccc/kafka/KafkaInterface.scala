@@ -1,6 +1,8 @@
-package ccc
+package ccc.kafka
 
 import zio._
+
+import ccc.errors._
 
 /**
   * An abstract interface to a kafka service.

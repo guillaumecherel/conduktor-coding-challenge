@@ -1,4 +1,4 @@
-package ccc
+package ccc.ui
 
 import zio._
 

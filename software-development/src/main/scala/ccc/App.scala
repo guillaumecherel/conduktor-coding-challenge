@@ -18,6 +18,11 @@ import scalafx.util.StringConverter
 import scalafx.Includes._
 import scalafx.geometry.Pos
 
+import ccc.kafka.KafkaService
+import ccc.state.Disconnected
+import ccc.state.State
+import ccc.ui.UI
+
 object App extends JFXApp {
 
     val ui = UI(Disconnected(), KafkaService, State.step)

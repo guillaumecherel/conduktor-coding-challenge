@@ -1,4 +1,4 @@
-package ccc
+package ccc.ui
 
 import scalafx.Includes._
 import scalafx.animation.AnimationTimer
@@ -16,6 +16,11 @@ import scalafx.scene.layout._
 import scalafx.scene.text.Text
 import scalafx.util._
 import zio._
+
+import ccc.Env
+import ccc.errors._
+import ccc.state.State
+import ccc.kafka.KafkaInterface
 
 /**
   * The scalafx user interface. Since Scalafx controls the main loop, we pass

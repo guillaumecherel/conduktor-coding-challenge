@@ -1,4 +1,4 @@
-package ccc
+package ccc.kafka
 
 import zio._
 import zio.console._

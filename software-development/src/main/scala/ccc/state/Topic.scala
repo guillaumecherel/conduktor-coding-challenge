@@ -1,8 +1,11 @@
-package ccc
+package ccc.state
 
 import zio._
 
 import scala.collection.immutable._
+
+import ccc.Env
+import ccc.errors._
 
 sealed trait Topic
 

@@ -2,6 +2,11 @@ package ccc
 
 import zio._
 
+import ccc.ui.UIInterface
+import ccc.kafka.KafkaInterface
+
+import ccc.errors._
+
 /**
   * The application environment.
   *
