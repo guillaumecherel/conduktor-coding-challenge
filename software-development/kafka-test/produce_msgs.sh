@@ -23,10 +23,12 @@ ANIMALS="1:Turtle
 3:Moon fish"
 
 docker run --network $NETWORK confluentinc/cp-kafka:6.1.0 kafka-topics \
-    --bootstrap-server $BROKER --create --topic animals --partitions 1
+    --bootstrap-server $BROKER --create --if-not-exists --topic animals \
+    --partitions 1
     
 docker run --network $NETWORK confluentinc/cp-kafka:6.1.0 kafka-topics \
-    --bootstrap-server $BROKER --create --topic seconds --partitions 2
+    --bootstrap-server $BROKER --create --if-not-exists --topic seconds \
+    --partitions 2
     
 
 echo "Sending records…"
