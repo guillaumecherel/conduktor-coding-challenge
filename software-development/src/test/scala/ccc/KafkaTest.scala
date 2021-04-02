@@ -11,7 +11,6 @@ import ccc.errors._
   */
 case class KafkaTest() extends KafkaInterface {
 
-    @Override
     def connect(bootstrapAddress: String,
         kafkaProperties: Vector[(String, String)]): ZIO[Any, TransitionFailure, Unit] =
         ZIO.effectTotal {
@@ -21,11 +20,9 @@ case class KafkaTest() extends KafkaInterface {
             } 
         }
 
-    @Override
     def isConnected(): ZIO[Any, TransitionFailure, Boolean] =
         ZIO.succeed(bootstrapAddress.nonEmpty)
 
-    @Override
     def disconnect(): ZIO[Any, TransitionFailure, Unit] =
         ZIO.effectTotal {
             this.bootstrapAddress = None
@@ -33,7 +30,6 @@ case class KafkaTest() extends KafkaInterface {
             this.selectedPartitions = Vector.empty
         }
 
-    @Override
     def openTopic(topicName: String): ZIO[Any, TransitionFailure, Unit] =
         ZIO.effectTotal {
             this.selectedTopic = topicName.nonEmpty match {
@@ -42,30 +38,24 @@ case class KafkaTest() extends KafkaInterface {
             }
         }
 
-    @Override
     def hasTopicOpened(): ZIO[Any, TransitionFailure, Boolean] = 
         ZIO.succeed(selectedTopic.nonEmpty)
 
-    @Override
     def closeTopic(): ZIO[Any, TransitionFailure, Unit] =
         ZIO.succeed(())
 
-    @Override
     def close(): ZIO[Any, Nothing, Unit] =
         ZIO.succeed(())
 
-    @Override
     def listPartitions(): ZIO[Any, TransitionFailure, Vector[Int]] =
         ZIO.succeed(this.partitions)
 
-    @Override
     def listTopics(): ZIO[Any, TransitionFailure, Vector[String]] =
         ZIO.succeed(this.topicList)
 
     def seekToBeginning(selectedPartitions: Vector[Int]): ZIO[Any, TransitionFailure, Unit] = 
         ZIO.succeed(())
 
-    @Override
     def poll(): ZIO[Any, TransitionFailure, Vector[String]] =
         ZIO.succeed {
             this.selectedTopic match {
@@ -80,7 +70,6 @@ case class KafkaTest() extends KafkaInterface {
             }
         }
 
-    @Override
     def assignPartitions(partition: Vector[Int]): ZIO[Any, TransitionFailure, Unit] =
         ZIO.effectTotal {
             this.selectedPartitions = partition

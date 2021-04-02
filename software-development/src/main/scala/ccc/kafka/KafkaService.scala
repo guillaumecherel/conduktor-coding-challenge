@@ -76,7 +76,6 @@ object KafkaService extends KafkaInterface {
             JavaConverters.asScala(a).toVector
     }
 
-    @Override
     def connect(
         bootstrapAddress: String,
         kafkaProperties: Vector[(String, String)]): ZIO[Any, TransitionFailure, Unit] =
@@ -105,7 +104,6 @@ object KafkaService extends KafkaInterface {
                 connect(bootstrapAddress, kafkaProperties)
         }
 
-    @Override
     def listTopics(): ZIO[Any, TransitionFailure, Vector[String]] = 
         state match {
             case Connected(_, _, topics) =>
@@ -117,7 +115,6 @@ object KafkaService extends KafkaInterface {
             case Disconnected() => ZIO.fail(TransitionNotTriggered())
         }
 
-    @Override
     def disconnect(): ZIO[Any, TransitionFailure, Unit] = 
         state match {
             case Disconnected() => ZIO.succeed(())
@@ -130,7 +127,6 @@ object KafkaService extends KafkaInterface {
                 closeTopic() *> disconnect()
         }
 
-    @Override
     def isConnected(): ZIO[Any, TransitionFailure, Boolean] = 
         state match {
             case _: Disconnected => ZIO.succeed(false)
@@ -138,7 +134,6 @@ object KafkaService extends KafkaInterface {
             case _: TopicOpened => ZIO.succeed(true)
         }
 
-    @Override
     def openTopic(topicName: String): ZIO[Any, TransitionFailure, Unit] = 
         state match {
             case Connected(admin, props, topics) => {
@@ -177,7 +172,6 @@ object KafkaService extends KafkaInterface {
             case other => ZIO.fail(TransitionNotTriggered())
         }
 
-    @Override
     def hasTopicOpened(): ZIO[Any, TransitionFailure, Boolean] = 
         state match {
             case _: Disconnected => ZIO.succeed(false)
@@ -185,7 +179,6 @@ object KafkaService extends KafkaInterface {
             case _: TopicOpened => ZIO.succeed(true)
         }
 
-    @Override
     def listPartitions(): ZIO[Any, TransitionFailure, Vector[Int]] = 
         state match {
             case _: Disconnected => ZIO.fail(TransitionNotTriggered())
@@ -207,7 +200,6 @@ object KafkaService extends KafkaInterface {
                 }
         }
 
-    @Override
     def poll(): ZIO[Any, TransitionFailure, Vector[String]] =
         state match {
             case _: Disconnected => ZIO.fail(TransitionNotTriggered())
@@ -252,7 +244,6 @@ object KafkaService extends KafkaInterface {
             (record.timestamp(), record.offset(), record.partition()) 
         }
 
-    @Override
     def assignPartitions(partitions: Vector[Int]): ZIO[Any, TransitionFailure, Unit] = 
         state match {
             case _: Disconnected => ZIO.fail(TransitionNotTriggered())
@@ -273,7 +264,6 @@ object KafkaService extends KafkaInterface {
         }
     }
 
-    @Override
     def closeTopic(): ZIO[Any, TransitionFailure, Unit] =
         state match {
             case _: Disconnected => ZIO.fail(TransitionNotTriggered())
@@ -286,7 +276,6 @@ object KafkaService extends KafkaInterface {
                 }
     }
 
-    @Override
     def close(): ZIO[Any, Nothing, Unit] =
         state match {
             case _: Disconnected => ZIO.effectTotal {

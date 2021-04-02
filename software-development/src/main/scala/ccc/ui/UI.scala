@@ -24,10 +24,10 @@ import ccc.kafka.KafkaInterface
 
 /**
   * The scalafx user interface. Since Scalafx controls the main loop, we pass
-  * it the step function which is responsible for updating the main application
-  * state. It also takes care of creating the application environment Env
-  * consisting of the given KafkaInterface and this UI itself. The overriden
-  * effectful method mutate the UI state.
+  * to it the step function which is responsible for updating the main
+  * application state. It also takes care of creating the application
+  * environment Env consisting of the given KafkaInterface and this UI itself.
+  * The overriden effectful method mutate the UI state.
   *
   * @param initialState
   * @param kafkaInterface
@@ -39,92 +39,76 @@ case class UI(
     step: State => ZIO[Env, Throwable, State]) 
     extends UIInterface {
 
-    @Override
     def getBootstrapAddress(): ZIO[Any, Nothing, String] = 
         ZIO.effectTotal(bootstrapAddress())
 
-    @Override
     def getKafkaProperties(): ZIO[Any, Nothing, Vector[(String, String)]] =
         ZIO.effectTotal(kafkaProperties.map({case (n,v) => (n.value, v.value)}).toVector)
 
-    @Override
     def getAskConnect(): ZIO[Any, Nothing, Boolean] = 
         ZIO.effectTotal(askConnect())
 
-    @Override
     def getSelectedTopic(): ZIO[Any, Nothing, Option[String]] =
         ZIO.effectTotal( selectedTopic() != null && selectedTopic().nonEmpty match {
             case false => None
             case true => Some(selectedTopic())
         }) 
 
-    @Override
     def getSelectedPartitions(): ZIO[Any, Nothing, Vector[Int]] =
         ZIO.effectTotal { 
             partitions.toVector.filter(_._2()).map(_._1)
         }
 
-    @Override
     def getIsConsuming(): ZIO[Any, Nothing, Boolean] =
         ZIO.effectTotal(isConsuming())
 
-    @Override
     def getIsConnected(bool: Boolean): ZIO[Any, Nothing, Boolean] =
         ZIO.effectTotal(isConnected())
 
-    @Override
     def setAlert(msg: String): ZIO[Any, Nothing, Unit] = 
         ZIO.effectTotal {
             this.alert() = msg
             this.alertColor() = Color.Red
         }
 
-    @Override
     def setInfo(msg: String): ZIO[Any, Nothing, Unit] = 
         ZIO.effectTotal {
             this.alert() = msg
             this.alertColor() = Color.Black
         }
 
-    @Override
     def setAskConnect(bool: Boolean): ZIO[Any, Nothing, Unit] = 
         ZIO.effectTotal {
             this.askConnect() = bool
         }
 
-    @Override
     def setRecords(records: Vector[String]): ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.records.clear()
             this.records.insertAll(0, records.reverseIterator)
         }
 
-    @Override
     def appendRecords(records: Vector[String]): ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.records.insertAll(0, records.reverseIterator)
         }
 
-    @Override
     def setTopics(topics: Vector[String]): ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.topics.clear()
             this.topics.addAll(topics)
         }
 
-    @Override
     def setIsConnected(bool: Boolean):  ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.isConnected() = bool
         }
 
-    @Override
     def setIsConsuming(bool: Boolean):  ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.isConnected() = bool
         }
 
-    @Override
     def setPartitions(partitions: Vector[Int], selectedPartitions: Vector[Int]): 
         ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
@@ -136,7 +120,6 @@ case class UI(
             )
         }
 
-    @Override
     def setSelectedPartitions(selectedPartitions: Vector[Int]): 
         ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
