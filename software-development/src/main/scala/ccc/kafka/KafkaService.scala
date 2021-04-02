@@ -285,5 +285,24 @@ object KafkaService extends KafkaInterface {
                     state = Connected(admin, props, topics_ )
                 }
     }
+
+    @Override
+    def close(): ZIO[Any, Nothing, Unit] =
+        state match {
+            case _: Disconnected => ZIO.effectTotal {
+                println("Nothing to close for Kafka")
+            }
+            case Connected(admin, _, _) => 
+                ZIO.effectTotal {
+                    println("Closing Kafka admin")
+                    admin.close()
+                }
+            case TopicOpened(admin, _, consumer, _, _) =>
+                ZIO.effectTotal {
+                    println("Closing Kafka admin and consumer")
+                    admin.close()
+                    consumer.close()
+                }
+    }
 }
 

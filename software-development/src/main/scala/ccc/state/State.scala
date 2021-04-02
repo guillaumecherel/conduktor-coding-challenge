@@ -184,7 +184,7 @@ object State {
                     (if (elapsedSeconds < 5) { 
                         s" ($elapsedSeconds s)"
                     } else {
-                        s" ($elapsedSeconds s… is the server up?)"
+                        s" ($elapsedSeconds s… is the server up? If it's booting up, try connectig again in a moment.)"
                     })
                 )}
             isConnected <- Env.kafka(_.isConnected())

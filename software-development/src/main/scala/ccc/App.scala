@@ -25,7 +25,14 @@ import ccc.ui.UI
 
 object App extends JFXApp {
 
+    // ScalaFX controls the application main loop, passed to the UI as the
+    // State.step function. It is an effectful function that will be manually
+    // run by the UI with ZIO's default runtime.
     val ui = UI(Disconnected(), KafkaService, State.step)
 
     stage = ui.stage
+
+    override def stopApp(): Unit = {
+        Runtime.default.unsafeRun(Env.close().provide(ui.env))
+    }
 }

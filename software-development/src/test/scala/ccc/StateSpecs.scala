@@ -6,6 +6,9 @@ import matchers._
 import zio._
 
 import ccc._
+import ccc.ui._
+import ccc.kafka._
+import ccc.state._
 
 class StateSpec extends AnyFlatSpec with should.Matchers {
 

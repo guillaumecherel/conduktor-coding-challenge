@@ -40,93 +40,93 @@ case class UI(
     extends UIInterface {
 
     @Override
-    def getBootstrapAddress(): ZIO[Env, TransitionFailure, String] = 
-        ZIO.succeed(bootstrapAddress())
+    def getBootstrapAddress(): ZIO[Any, Nothing, String] = 
+        ZIO.effectTotal(bootstrapAddress())
 
     @Override
-    def getKafkaProperties(): ZIO[Env, TransitionFailure, Vector[(String, String)]] =
-        ZIO.succeed(kafkaProperties.map({case (n,v) => (n.value, v.value)}).toVector)
+    def getKafkaProperties(): ZIO[Any, Nothing, Vector[(String, String)]] =
+        ZIO.effectTotal(kafkaProperties.map({case (n,v) => (n.value, v.value)}).toVector)
 
     @Override
-    def getAskConnect(): ZIO[Env, TransitionFailure, Boolean] = 
-        ZIO.succeed(askConnect())
+    def getAskConnect(): ZIO[Any, Nothing, Boolean] = 
+        ZIO.effectTotal(askConnect())
 
     @Override
-    def getSelectedTopic(): ZIO[Env, TransitionFailure, Option[String]] =
-        ZIO.succeed( selectedTopic() != null && selectedTopic().nonEmpty match {
+    def getSelectedTopic(): ZIO[Any, Nothing, Option[String]] =
+        ZIO.effectTotal( selectedTopic() != null && selectedTopic().nonEmpty match {
             case false => None
             case true => Some(selectedTopic())
         }) 
 
     @Override
-    def getSelectedPartitions(): ZIO[Env, TransitionFailure, Vector[Int]] =
-        ZIO.succeed { 
+    def getSelectedPartitions(): ZIO[Any, Nothing, Vector[Int]] =
+        ZIO.effectTotal { 
             partitions.toVector.filter(_._2()).map(_._1)
         }
 
     @Override
-    def getIsConsuming(): ZIO[Env, TransitionFailure, Boolean] =
-        ZIO.succeed(isConsuming())
+    def getIsConsuming(): ZIO[Any, Nothing, Boolean] =
+        ZIO.effectTotal(isConsuming())
 
     @Override
-    def getIsConnected(bool: Boolean): ZIO[Env, TransitionFailure, Boolean] =
-        ZIO.succeed(isConnected())
+    def getIsConnected(bool: Boolean): ZIO[Any, Nothing, Boolean] =
+        ZIO.effectTotal(isConnected())
 
     @Override
-    def setAlert(msg: String): ZIO[Env, TransitionFailure, Unit] = 
+    def setAlert(msg: String): ZIO[Any, Nothing, Unit] = 
         ZIO.effectTotal {
             this.alert() = msg
             this.alertColor() = Color.Red
         }
 
     @Override
-    def setInfo(msg: String): ZIO[Env, TransitionFailure, Unit] = 
+    def setInfo(msg: String): ZIO[Any, Nothing, Unit] = 
         ZIO.effectTotal {
             this.alert() = msg
             this.alertColor() = Color.Black
         }
 
     @Override
-    def setAskConnect(bool: Boolean): ZIO[Env, TransitionFailure, Unit] = 
+    def setAskConnect(bool: Boolean): ZIO[Any, Nothing, Unit] = 
         ZIO.effectTotal {
             this.askConnect() = bool
         }
 
     @Override
-    def setRecords(records: Vector[String]): ZIO[Env, TransitionFailure, Unit] =
+    def setRecords(records: Vector[String]): ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.records.clear()
             this.records.insertAll(0, records.reverseIterator)
         }
 
     @Override
-    def appendRecords(records: Vector[String]): ZIO[Env, TransitionFailure, Unit] =
+    def appendRecords(records: Vector[String]): ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.records.insertAll(0, records.reverseIterator)
         }
 
     @Override
-    def setTopics(topics: Vector[String]): ZIO[Env, TransitionFailure, Unit] =
+    def setTopics(topics: Vector[String]): ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.topics.clear()
             this.topics.addAll(topics)
         }
 
     @Override
-    def setIsConnected(bool: Boolean):  ZIO[Env, TransitionFailure, Unit] =
+    def setIsConnected(bool: Boolean):  ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.isConnected() = bool
         }
 
     @Override
-    def setIsConsuming(bool: Boolean):  ZIO[Env, TransitionFailure, Unit] =
+    def setIsConsuming(bool: Boolean):  ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.isConnected() = bool
         }
 
     @Override
     def setPartitions(partitions: Vector[Int], selectedPartitions: Vector[Int]): 
-        ZIO[Env, TransitionFailure, Unit] =
+        ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.partitions.clear()
             this.partitions.addAll( 
@@ -138,7 +138,7 @@ case class UI(
 
     @Override
     def setSelectedPartitions(selectedPartitions: Vector[Int]): 
-        ZIO[Env, TransitionFailure, Unit] =
+        ZIO[Any, Nothing, Unit] =
         ZIO.effectTotal {
             this.partitions.foreach { case (partition, checked) => 
                 checked() = selectedPartitions.contains(partition)

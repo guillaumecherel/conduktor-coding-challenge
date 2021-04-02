@@ -21,4 +21,5 @@ trait KafkaInterface {
     def seekToBeginning(selectedPartitions: Vector[Int]): ZIO[Any, TransitionFailure, Unit]
     def assignPartitions(partition: Vector[Int]): ZIO[Any, TransitionFailure, Unit]
     def closeTopic(): ZIO[Any, TransitionFailure, Unit]
+    def close(): ZIO[Any, Nothing, Unit]
 }

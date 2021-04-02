@@ -3,6 +3,8 @@ package ccc.kafka
 import zio._
 import zio.console._
 
+import ccc.errors._
+
 /**
   * An interface to a fake kafka service for testing purpose.
   *
@@ -46,6 +48,10 @@ case class KafkaTest() extends KafkaInterface {
 
     @Override
     def closeTopic(): ZIO[Any, TransitionFailure, Unit] =
+        ZIO.succeed(())
+
+    @Override
+    def close(): ZIO[Any, Nothing, Unit] =
         ZIO.succeed(())
 
     @Override
