@@ -1,5 +1,6 @@
 package ccc.ui
 
+import javafx.application.Platform
 import scalafx.Includes._
 import scalafx.animation.AnimationTimer
 import scalafx.application.JFXApp.PrimaryStage
@@ -36,7 +37,7 @@ import ccc.kafka.KafkaInterface
 case class UI(
     initialState: State,
     kafkaInterface: KafkaInterface, 
-    step: State => ZIO[Env, Throwable, State]) 
+    step: State => ZIO[Env, Throwable, State])
     extends UIInterface {
 
     def getBootstrapAddress(): ZIO[Any, Nothing, String] = 
@@ -199,7 +200,16 @@ case class UI(
     // This AnimationTimer is responsible for continuously updating the 
     // application main state.
     val stepper = AnimationTimer { (now: Long) => 
-        state = Runtime.default.unsafeRun(step(state).provide(env))
+        try {
+            state = Runtime.default.unsafeRun(step(state).provide(env))
+        } catch { 
+            case (e: Throwable) => {
+                // This will call ccc.App.stopApp, properly closing the 
+                // environment (thus any kafka resource attached)
+                Platform.exit()
+                throw e
+            }
+        }
     }
 
     val addressBar = new HBox {

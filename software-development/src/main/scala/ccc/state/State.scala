@@ -33,10 +33,16 @@ final case class ChangingBootstrap() extends State
 
 object State {
 
-    def step (connection: State): ZIO[Env, Throwable, State] = 
+    def step (connection: State): ZIO[Env, Throwable, State] = {
         update(connection).mapError {
+            // Any exception passing through here will be caught by the 
+            // AnimationTimer UI.stepper, triggering the proper closing of the
+            // environment.
             case OtherError(cause) => cause
+            case other => new RuntimeException(
+                "[State.step] Unhandled exception: " ++ other.toString)
         }
+    }
 
     def update(connection: State): ZIO[Env, TransitionFailure, State] = 
         // The application is modelled as a finite state machine where 

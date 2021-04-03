@@ -23,7 +23,15 @@ import ccc.state.Disconnected
 import ccc.state.State
 import ccc.ui.UI
 
+import java.lang.Thread
+
 object App extends JFXApp {
+
+    // This function will be called when the platform exits, properly closing
+    // the environmant and any kafka admin and consumer attached. 
+    override def stopApp(): Unit = {
+        Runtime.default.unsafeRun(Env.close().provide(ui.env))
+    }
 
     // ScalaFX controls the application main loop, passed to the UI as the
     // State.step function. It is an effectful function that will be manually
@@ -31,8 +39,4 @@ object App extends JFXApp {
     val ui = UI(Disconnected(), KafkaService, State.step)
 
     stage = ui.stage
-
-    override def stopApp(): Unit = {
-        Runtime.default.unsafeRun(Env.close().provide(ui.env))
-    }
 }
